@@ -213,4 +213,9 @@ link.click();
 
 ```
 
-### pushing and pulling from github // only pushing to codeberg
+### pushing and pulling from github // only pushing to codeberg.
+
+```
+git push codeberg main
+
+```
