@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>GENUARY — DAY TEMPLATE</title>
+
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: white;
+        color: black;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+
+        /* center canvas */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+
+      canvas {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+
+  <body>
+    <canvas id="canvas" width="600" height="400"></canvas>
+
+    <script>
+      // CANVAS SETUP
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+
+      const width = canvas.width;
+      const height = canvas.height;
+
+      // BALL STATE (explicit responsibility)
+      let x = width / 2;
+      let y = height / 2;
+      let radius = 10;
+
+      let vx = 3;
+      let vy = 2;
+
+      // DRAW
+      function drawBall() {
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // UPDATE
+      function update() {
+        x += vx;
+        y += vy;
+
+        // wall collisions
+        if (x - radius < 0 || x + radius > width) {
+          vx *= -1;
+        }
+
+        if (y - radius < 0 || y + radius > height) {
+          vy *= -1;
+        }
+      }
+
+      // LOOP
+      function loop() {
+        ctx.clearRect(0, 0, width, height);
+
+        update();
+        drawBall();
+
+        requestAnimationFrame(loop);
+      }
+
+      // START
+      loop();
+    </script>
+  </body>
+</html>
