@@ -219,3 +219,366 @@ link.click();
 git push codeberg main
 
 ```
+
+---
+
+# CORE VANILLA JS CHEAT SHEET
+
+_(Mapped to Genuary prompts)_
+
+---
+
+## 0. Absolute base (EVERY DAY)
+
+```js
+const canvas = document.querySelector("canvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = 800;
+canvas.height = 800;
+```
+
+Clear frame:
+
+```js
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+```
+
+---
+
+## 1. Drawing primitives
+
+**Days:** Jan 1, 5, 12, 20, 21
+
+### Rectangle
+
+```js
+ctx.fillStyle = "black";
+ctx.fillRect(x, y, w, h);
+```
+
+### Circle
+
+```js
+ctx.beginPath();
+ctx.arc(x, y, r, 0, Math.PI * 2);
+ctx.fill();
+```
+
+### Line / Path
+
+```js
+ctx.beginPath();
+ctx.moveTo(x1, y1);
+ctx.lineTo(x2, y2);
+ctx.stroke();
+```
+
+---
+
+## 2. Animation loop (time is explicit)
+
+**Days:** Jan 2, 6, 16, 18, 27
+
+```js
+let lastTime = 0;
+
+function animate(time) {
+  const dt = (time - lastTime) / 1000;
+  lastTime = time;
+
+  update(dt);
+  draw();
+
+  requestAnimationFrame(animate);
+}
+
+requestAnimationFrame(animate);
+```
+
+---
+
+## 3. State + interaction
+
+**Days:** Jan 6, 7, 18, 30
+
+```js
+let lightOn = false;
+
+document.addEventListener("click", () => {
+  lightOn = !lightOn;
+});
+```
+
+Keyboard:
+
+```js
+document.addEventListener("keydown", (e) => {
+  if (e.key === " ") paused = !paused;
+});
+```
+
+---
+
+## 4. Grids + indexing
+
+**Days:** Jan 4, 9, 12, 19, 26
+
+### 2D grid
+
+```js
+const cols = 16;
+const rows = 16;
+const grid = Array.from({ length: rows }, () =>
+  Array.from({ length: cols }, () => Math.random() > 0.5)
+);
+```
+
+### Render grid
+
+```js
+for (let y = 0; y < rows; y++) {
+  for (let x = 0; x < cols; x++) {
+    if (grid[y][x]) {
+      ctx.fillRect(x * cellW, y * cellH, cellW, cellH);
+    }
+  }
+}
+```
+
+---
+
+## 5. Pixels & low resolution
+
+**Days:** Jan 4, 13, 19
+
+```js
+const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+const data = imageData.data; // RGBA array
+```
+
+Access pixel:
+
+```js
+const i = (y * canvas.width + x) * 4;
+const r = data[i];
+const g = data[i + 1];
+const b = data[i + 2];
+```
+
+---
+
+## 6. Camera (self portrait, mirrors)
+
+**Days:** Jan 13
+
+```js
+const video = document.createElement("video");
+
+navigator.mediaDevices
+  .getUserMedia({
+    video: {
+      width: { ideal: 320 },
+      height: { ideal: 240 },
+      facingMode: "user",
+    },
+    audio: false,
+  })
+  .then((stream) => {
+    video.srcObject = stream;
+    video.play();
+  });
+```
+
+Draw camera frame:
+
+```js
+ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+```
+
+Mirror:
+
+```js
+ctx.save();
+ctx.scale(-1, 1);
+ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+ctx.restore();
+```
+
+---
+
+## 7. Offscreen canvas (shadows, lowres, composition)
+
+**Days:** Jan 4, 15, 23
+
+```js
+const off = document.createElement("canvas");
+off.width = 100;
+off.height = 100;
+const offCtx = off.getContext("2d");
+```
+
+Draw offscreen → scale up:
+
+```js
+ctx.imageSmoothingEnabled = false;
+ctx.drawImage(off, 0, 0, canvas.width, canvas.height);
+```
+
+---
+
+## 8. Recursion
+
+**Days:** Jan 3, 12, 26
+
+```js
+function split(x, y, w, h, depth) {
+  if (depth <= 0) {
+    ctx.strokeRect(x, y, w, h);
+    return;
+  }
+
+  split(x, y, w / 2, h / 2, depth - 1);
+  split(x + w / 2, y, w / 2, h / 2, depth - 1);
+}
+```
+
+---
+
+## 9. Fibonacci / sequences
+
+**Days:** Jan 3
+
+```js
+function fibonacci(n) {
+  let a = 0,
+    b = 1;
+  for (let i = 0; i < n; i++) {
+    [a, b] = [b, a + b];
+  }
+  return a;
+}
+```
+
+Use as size / spacing.
+
+---
+
+## 10. Polar coordinates
+
+**Days:** Jan 10
+
+```js
+const x = cx + r * Math.cos(angle);
+const y = cy + r * Math.sin(angle);
+```
+
+---
+
+## 11. Noise (simple Perlin-style)
+
+**Days:** Jan 16, 25
+
+```js
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
+function noise1D(x) {
+  const i = Math.floor(x);
+  const f = x - i;
+  const a = Math.random(); // cache for real noise
+  const b = Math.random();
+  return lerp(a, b, f);
+}
+```
+
+(Real Perlin = more bookkeeping — this teaches the idea.)
+
+---
+
+## 12. Transformations & symmetry
+
+**Days:** Jan 17
+
+```js
+ctx.save();
+ctx.translate(cx, cy);
+ctx.rotate(angle);
+ctx.scale(-1, 1);
+drawShape();
+ctx.restore();
+```
+
+---
+
+## 13. One line / path memory
+
+**Days:** Jan 18, 20
+
+```js
+ctx.beginPath();
+points.forEach((p, i) => {
+  if (i === 0) ctx.moveTo(p.x, p.y);
+  else ctx.lineTo(p.x, p.y);
+});
+ctx.stroke();
+```
+
+---
+
+## 14. DOM only (no canvas)
+
+**Days:** Jan 28
+
+```js
+const div = document.createElement("div");
+div.style.width = "20px";
+div.style.height = "20px";
+div.style.background = "black";
+document.body.appendChild(div);
+```
+
+Grid via CSS:
+
+```css
+body {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+}
+```
+
+---
+
+## 15. Genetic systems
+
+**Days:** Jan 29
+
+```js
+function mutate(value, rate = 0.1) {
+  if (Math.random() < rate) {
+    return value + (Math.random() - 0.5);
+  }
+  return value;
+}
+```
+
+---
+
+## 16. Shader day (minimal setup)
+
+**Days:** Jan 31
+
+```js
+const gl = canvas.getContext("webgl");
+```
+
+(Everything after this is pain — intentionally.)
+
+---
+
+## Final Art Worker Principle
+
+> p5.js hid **systems**.
+> Vanilla JS exposes **mechanisms**.
+> This cheat sheet is not about beauty — it’s about control.
