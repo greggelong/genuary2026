@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>GENUARY 2026 — DAY 1</title>
+
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background: white;
+            color: black;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+                "Liberation Mono", "Courier New", monospace;
+
+            /* center canvas */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas" width="600" height="400"></canvas>
+
+    <script>
+        // CANVAS SETUP
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        canvas.style = "background-color: rgb(255,104,103)"
+
+
+        let t = 0 // for animation loop
+
+        const A = { x: canvas.width / 2, y: 50 }
+        const B = { x: 50, y: canvas.height - 50 }
+        const C = { x: canvas.width - 50, y: canvas.height - 50 }
+        //const D = { x: canvas.width - 50, y: 50 }
+
+        const target = { x: 0, y: 0 }
+
+        target.x = Math.random() * canvas.width
+        target.y = Math.random() * canvas.height
+
+        let csz = 8
+
+
+
+        // lerp function
+
+        function lerp(a, b, t) {
+            return a + (b - a) * t
+        }
+
+
+        function dot(x, y, sz) {
+            ctx.fillStyle = randomRed()//"rgba(255,0,0,0.1)";
+            ctx.beginPath()
+            ctx.arc(x, y, sz, 0, Math.PI * 2)
+            ctx.fill()
+
+        }
+
+        function randomRed() {
+            const h = Math.random() * 10 - 5; // around red (0°)
+            const s = 60 + Math.random() * 40;
+            const l = 40 + Math.random() * 20;
+            return `hsl(${h}, ${s}%, ${l}%)`;
+        }
+
+
+
+        // LOOP
+        function loop() {
+
+            for (let i = 0; i < 300; i++) {
+
+                // print the target
+                dot(target.x, target.y, csz)
+
+                // get a random a b or c
+                let pos = Math.floor(Math.random() * 3)
+
+                // select a b or c and set new target value
+
+                if (pos === 0) {
+                    target.x = lerp(target.x, A.x, 0.5)
+                    target.y = lerp(target.y, A.y, 0.5)
+                }
+                else if (pos === 1) {
+                    target.x = lerp(target.x, B.x, 0.5)
+                    target.y = lerp(target.y, B.y, 0.5)
+                } else if (pos === 2) {
+                    target.x = lerp(target.x, C.x, 0.5)
+                    target.y = lerp(target.y, C.y, 0.5)
+                }
+                /*  else if (pos === 3) {
+                     target.x = lerp(target.x, D.x, 0.5)
+                     target.y = lerp(target.y, D.y, 0.5)
+                 } */
+
+            }
+
+
+
+            t++
+            if (t % 600 == 0) {
+                ctx.fillStyle = randomRed();
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                console.log("hi")
+                A.y = 10 + Math.floor(Math.random() * canvas.height / 2)
+                A.x = 10 + Math.floor(Math.random() * canvas.width)
+
+                B.y = canvas.height / 2 + Math.floor(Math.random() * canvas.height / 2)
+                B.x = 10 + Math.floor(Math.random() * canvas.width / 4)
+
+                C.y = canvas.height / 2 + Math.floor(Math.random() * canvas.height / 2)
+                C.x = canvas.width - Math.floor(Math.random() * canvas.width / 4)
+
+                // D.y = 0 + Math.floor(Math.random() * canvas.height / 5)
+                // D.x = 100 + Math.floor(Math.random() * canvas.width)
+                csz = 8 + Math.floor(Math.random() * 20)
+            }
+            requestAnimationFrame(loop);
+        }
+
+        // START
+        loop();
+    </script>
+</body>
+
+</html>

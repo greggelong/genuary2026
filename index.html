@@ -1,159 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Genuary 2026 / 一月创作挑战</title>
-    <style>
-      /* Brutalist, monospaced, high contrast */
-      body {
-        margin: 0;
-        padding: 20px;
-        background: #ffffff;
-        color: #000000;
-        font-family: "Courier New", Courier, monospace;
-        line-height: 1.5;
-      }
 
-      h1 {
-        font-size: 2em;
-        text-align: center;
-        margin-bottom: 1rem;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Genuary 2026 / 一月创作挑战</title>
+  <style>
+    /* Brutalist, monospaced, high contrast */
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #ffffff;
+      color: #000000;
+      font-family: "Courier New", Courier, monospace;
+      line-height: 1.5;
+    }
 
-      h2 {
-        margin-top: 2rem;
-        font-size: 1.5em;
-        border-top: 2px solid #000;
-        padding-top: 0.5rem;
-      }
+    h1 {
+      font-size: 2em;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
 
-      .canvas-container {
-        display: flex;
-        justify-content: center;
-        margin: 2rem 0;
-      }
+    h2 {
+      margin-top: 2rem;
+      font-size: 1.5em;
+      border-top: 2px solid #000;
+      padding-top: 0.5rem;
+    }
 
-      canvas {
-        border: 2px solid #000;
-        background: #fff;
-      }
+    .canvas-container {
+      display: flex;
+      justify-content: center;
+      margin: 2rem 0;
+    }
 
-      a {
-        color: #000;
-        text-decoration: none;
-        border-bottom: 1px solid #000;
-      }
+    canvas {
+      border: 2px solid #000;
+      background: #fff;
+    }
 
-      .section {
-        margin-bottom: 2rem;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Genuary 2026 / 一月创作挑战</h1>
+    a {
+      color: #000;
+      text-decoration: none;
+      border-bottom: 1px solid #000;
+    }
+
+    .section {
+      margin-bottom: 2rem;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Genuary 2026 / 一月创作挑战</h1>
+  <p>
+    <strong>AI Boss Challenge:</strong> Decouple from AI and code using
+    vanilla JavaScript only. 原生 JS 编程，不依赖 AI。
+  </p>
+  <p>
+    <a href="https://genuary.art" target="_blank" rel="noopener noreferrer">
+      Genuary Prompts / 一月创作提示
+    </a>
+  </p>
+
+  <div class="canvas-container">
+    <canvas id="challengeCanvas" width="400" height="300"></canvas>
+  </div>
+
+  <div class="section">
+    <h2>Template / 模板</h2>
     <p>
-      <strong>AI Boss Challenge:</strong> Decouple from AI and code using
-      vanilla JavaScript only. 原生 JS 编程，不依赖 AI。
+      <a href="template/index.html" target="_blank" rel="noopener noreferrer">[live] Open the basic canvas template /
+        打开基本画布模板</a>
     </p>
+
     <p>
-      <a href="https://genuary.art" target="_blank" rel="noopener noreferrer">
-        Genuary Prompts / 一月创作提示
+      <a href="https://github.com/greggelong/genuary2026/blob/main/template/index.html" target="_blank"
+        rel="noopener noreferrer">[code] Open the basic canvas template / 打开基本画布模板</a>
+    </p>
+
+    <p>
+      <a href="p5_to_vanilla_js_cheat_sheet.pdf" target="_blank" rel="noopener noreferrer">
+        Vanilla JS / p5.js Cheat Sheet (PDF) / 原生 JS 与 p5.js 速查表 (PDF)
       </a>
     </p>
+  </div>
 
-    <div class="canvas-container">
-      <canvas id="challengeCanvas" width="400" height="300"></canvas>
-    </div>
+  <div class="section">
+    <h2>Daily Challenges / 每日挑战</h2>
+    <ul>
+      <li>
+        <a href="day01/index.html" target="_blank" rel="noopener noreferrer">Day 01 / 第一天</a>
+      </li>
+      <li>
+        <a href="day02/index.html" target="_blank" rel="noopener noreferrer">Day 02 / 第二天</a>
+      </li>
+      <li>
+        <a href="day03/index.html" target="_blank" rel="noopener noreferrer">Day 03 / 第三天</a>
+      </li>
+      <!-- add more as needed -->
+    </ul>
+  </div>
 
-    <div class="section">
-      <h2>Template / 模板</h2>
-      <p>
-        <a href="template/index.html" target="_blank" rel="noopener noreferrer"
-          >[live] Open the basic canvas template / 打开基本画布模板</a
-        >
-      </p>
+  <script>
+    // Bouncing ball animation
+    const canvas = document.getElementById("challengeCanvas");
+    const ctx = canvas.getContext("2d");
 
-      <p>
-        <a
-          href="https://github.com/greggelong/genuary2026/blob/main/template/index.html"
-          target="_blank"
-          rel="noopener noreferrer"
-          >[code] Open the basic canvas template / 打开基本画布模板</a
-        >
-      </p>
+    let x = canvas.width / 2;
+    let y = canvas.height / 2;
+    let vx = 3;
+    let vy = 2;
+    const radius = 20;
 
-      <p>
-        <a
-          href="p5_to_vanilla_js_cheat_sheet.pdf"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Vanilla JS / p5.js Cheat Sheet (PDF) / 原生 JS 与 p5.js 速查表 (PDF)
-        </a>
-      </p>
-    </div>
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    <div class="section">
-      <h2>Daily Challenges / 每日挑战</h2>
-      <ul>
-        <li>
-          <a href="day01/index.html" target="_blank" rel="noopener noreferrer"
-            >Day 01 / 第一天</a
-          >
-        </li>
-        <li>
-          <a href="day02/index.html" target="_blank" rel="noopener noreferrer"
-            >Day 02 / 第二天</a
-          >
-        </li>
-        <li>
-          <a href="day03/index.html" target="_blank" rel="noopener noreferrer"
-            >Day 03 / 第三天</a
-          >
-        </li>
-        <!-- add more as needed -->
-      </ul>
-    </div>
+      // Draw AI Boss as text on top
+      ctx.font = "16px monospace";
+      ctx.fillStyle = "#000";
+      ctx.fillText("AI BOSS APPROVES THIS WORK", 10, 20);
 
-    <script>
-      // Bouncing ball animation
-      const canvas = document.getElementById("challengeCanvas");
-      const ctx = canvas.getContext("2d");
+      // Draw the ball
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = "#000";
+      ctx.fill();
+      ctx.closePath();
 
-      let x = canvas.width / 2;
-      let y = canvas.height / 2;
-      let vx = 3;
-      let vy = 2;
-      const radius = 20;
+      // Update position
+      x += vx;
+      y += vy;
 
-      function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Bounce off edges
+      if (x + radius > canvas.width || x - radius < 0) vx = -vx;
+      if (y + radius > canvas.height || y - radius < 0) vy = -vy;
 
-        // Draw AI Boss as text on top
-        ctx.font = "16px monospace";
-        ctx.fillStyle = "#000";
-        ctx.fillText("AI BOSS APPROVES THIS WORK", 10, 20);
+      requestAnimationFrame(animate);
+    }
 
-        // Draw the ball
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fillStyle = "#000";
-        ctx.fill();
-        ctx.closePath();
+    animate();
+  </script>
+</body>
 
-        // Update position
-        x += vx;
-        y += vy;
-
-        // Bounce off edges
-        if (x + radius > canvas.width || x - radius < 0) vx = -vx;
-        if (y + radius > canvas.height || y - radius < 0) vy = -vy;
-
-        requestAnimationFrame(animate);
-      }
-
-      animate();
-    </script>
-  </body>
 </html>
