@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            background: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            font-family: sans-serif;
+            overflow: hidden;
+        }
+
+        canvas {
+            border: 2px solid #444;
+            background: #222;
+            cursor: ew-resize;
+        }
+
+        .info {
+            margin-top: 15px;
+            color: #888;
+            font-size: 1.1em;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2></h2>
+    <canvas id="canvas" width="800" height="600"></canvas>
+    <p class="info">let the hammer fall</p>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let frame = 0;
+        const totalFrames = 140;
+        let mouseX = 400;
+
+        // 1. YOUR COMPLETE TEXT
+        const longText = "The Art-Worker’s life is a continuous cycle of making and strain,  compressed under the weight of industry,  consumerism  and  artificial-intelligence"
+
+        const words = longText.split(" ");
+        const spacing = 280; // Distance between words
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+        });
+
+        function draw() {
+            let t = (frame % totalFrames) / totalFrames;
+
+            const floorY = 530;
+            const startY = 40;
+            const baseW = 340;
+            const baseH = 70;
+
+            let headW = baseW;
+            let headH = baseH;
+            let headY = startY;
+            let squashVal = 0;
+            let shake = 0;
+
+            // ANIMATION LOGIC
+            if (t < 0.15) {
+                let normT = t / 0.15;
+                headY = startY + (normT * (floorY - startY - baseH));
+            }
+            else if (t < 0.45) {
+                let normT = (t - 0.15) / 0.3;
+                squashVal = Math.sin(normT * Math.PI);
+                headH = baseH - (squashVal * 50);
+                headW = baseW + (squashVal * 80);
+                headY = floorY - headH;
+                if (normT < 0.5) shake = (1 - normT * 2) * 12;
+            }
+            else {
+                let normT = (t - 0.45) / 0.55;
+                headY = (floorY - baseH) - (normT * (floorY - baseH - startY));
+            }
+
+            ctx.save();
+            if (shake > 0) {
+                ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);
+            }
+
+            ctx.clearRect(-20, -20, canvas.width + 40, canvas.height + 40);
+
+            // DRAW FLOOR
+            ctx.fillStyle = "#333";
+            ctx.fillRect(0, floorY, canvas.width, 70);
+
+            // 2. DYNAMIC SCROLL CALCULATION
+            // Total length of the sentence in pixels
+            const totalSentenceWidth = (words.length - 1) * spacing;
+            // Map mouseX (0 to 800) to scroll position
+            // This ensures the first word is at center when mouse is left, 
+            // and last word is at center when mouse is right.
+            const scrollOffset = 400 - (mouseX / canvas.width) * totalSentenceWidth;
+
+            // DRAW WORDS
+            ctx.font = "bold 60px sans-serif";
+            ctx.textAlign = "center";
+
+            words.forEach((word, index) => {
+                const wordX = scrollOffset + (index * spacing);
+
+                // Only draw if word is roughly on screen to save performance
+                if (wordX > -200 && wordX < canvas.width + 200) {
+                    const isUnderHammer = Math.abs(wordX - 400) < headW / 2;
+                    const textSquash = (t >= 0.15 && t <= 0.45 && isUnderHammer) ? squashVal : 0;
+
+                    ctx.save();
+                    ctx.translate(wordX, floorY);
+                    ctx.scale(1 + textSquash * 1.8, 1 - textSquash * 0.9);
+
+                    ctx.shadowColor = isUnderHammer ? "#FA0000" : "#00ffcc";
+                    ctx.shadowBlur = 15;
+                    ctx.fillStyle = isUnderHammer ? "#FA0000" : "#00ffcc";
+
+                    ctx.fillText(word, 0, -15);
+                    ctx.restore();
+                }
+            });
+
+            // DRAW HAMMER (Static at center X: 400)
+            ctx.strokeStyle = '#8d6e63';
+            ctx.lineWidth = 48;
+            ctx.lineCap = "butt";
+            ctx.beginPath();
+            ctx.moveTo(400, headY);
+            ctx.lineTo(400, headY - 180);
+            ctx.stroke();
+
+            const headX = 400 - (headW / 2);
+            ctx.fillStyle = '#aaa';
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 4;
+            ctx.fillRect(headX, headY, headW, headH);
+            ctx.strokeRect(headX, headY, headW, headH);
+
+            ctx.restore();
+
+            frame++;
+            requestAnimationFrame(draw);
+        }
+        draw();
+    </script>
+</body>
+
+</html>
