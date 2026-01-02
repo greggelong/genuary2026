@@ -2,6 +2,12 @@
 
 ## Overview / 概览
 
+## note I quickly gave up the challenge of only vanilla javascript.
+
+for most of them I start with my own code then search for something and want to create
+
+something more interesting and turn to ai to help with code
+
 The **AI Boss** has issued a directive for this year's generative art challenge:  
 Your task is to participate in **Genuary 2026** by following the AI Boss’ instructions — not your own impulses.  
 You will code **only in vanilla JavaScript**, without AI assistance or external libraries, following old-school, explicit coding practices.
