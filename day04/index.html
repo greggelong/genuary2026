@@ -6,14 +6,23 @@
     <title>GENUARY — DAY TEMPLATE</title>
 
     <style>
+        @font-face {
+            font-family: 'C64Font';
+            src: url('PetMe64.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
         html,
         body {
             margin: 0;
             padding: 0;
             background: #3e31a1;
-            color: black;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-                "Liberation Mono", "Courier New", monospace;
+            color: white;
+            /*font-family:
+                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+                "Liberation Mono", "Courier New", monospace; */
+            font-family: 'C64Font';
 
             /* center canvas */
             display: flex;
@@ -26,7 +35,8 @@
             text-align: center;
         }
 
-        canvas {
+        canvas,
+        webcam {
             border: 5px solid grey;
         }
     </style>
@@ -34,11 +44,14 @@
 
 <body>
     <div class="c64-wrapper">
-        <h1>Commodore 64</h1>
+        <h1>FAKE COMMODORE 64</h1>
+        <h3>["█", "▓", "▒", "░", "　"]</h3>
+        <p>webcam is 40 by 25 pixels, characters are 20 pixels</p>
+        <p>canvas is 800 by 500, recreating c64 screen memory</p>
+        <p>poke(1024),102 to poke(2024),102</p>
 
         <div class="screen-container">
-            <div class="mem-label top-left">1024 ($0400)</div>
-            <div class="mem-label bottom-right">2023 ($07E7)</div>
+
 
             <canvas id="canvas" width="800" height="500"></canvas>
         </div>
@@ -60,7 +73,7 @@
             const video = document.getElementById("webcam");
             // some fake petscii characters
 
-            const PETSCII = ["█", "▓", "▒", "░", "　"];
+            const PETSCII = ["█", "▓", "▒", "░", "　"]//.reverse();
 
 
             setup()
