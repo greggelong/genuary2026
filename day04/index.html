@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>GENUARY — DAY TEMPLATE</title>
+
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background: #3e31a1;
+            color: black;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+                "Liberation Mono", "Courier New", monospace;
+
+            /* center canvas */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .c64-wrapper {
+            text-align: center;
+        }
+
+        canvas {
+            border: 5px solid grey;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="c64-wrapper">
+        <h1>Commodore 64</h1>
+
+        <div class="screen-container">
+            <div class="mem-label top-left">1024 ($0400)</div>
+            <div class="mem-label bottom-right">2023 ($07E7)</div>
+
+            <canvas id="canvas" width="800" height="500"></canvas>
+        </div>
+
+        <video id="webcam" autoplay playsinline muted controls width="40" height="25" style="display: block;">
+        </video>
+
+        <script>
+            // set web cam size to the Commodore 64 screen
+            // 40 by 25. poke 1024 to poke 2023. $0400-$07E7
+            //1024 - 2023
+            // scale the canvas by 20 so 800 by 500
+            // get canvas drawing context and and web cam
+            const COLS = 40;
+            const ROWS = 25;
+            const SIZE = 20; // 800 / 40 = 20
+            const canvas = document.getElementById("canvas");
+            const ctx = canvas.getContext("2d");
+            const video = document.getElementById("webcam");
+            // some fake petscii characters
+
+            const PETSCII = ["█", "▓", "▒", "░", "　"];
+
+
+            setup()
+
+            // web async function
+            async function setup() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    video.srcObject = stream;
+                } catch (err) {
+                    console.error("Webcam access denied", err);
+
+                    // async function calls draw
+                    draw()
+                }
+
+            }
+            // 1. Define the palette as RGB arrays for faster math
+            const C64_PALETTE = [
+                [0, 0, 0], [255, 255, 255], [136, 57, 50], [103, 182, 189],
+                [139, 63, 150], [93, 174, 80], [39, 37, 143], [187, 163, 93],
+                [139, 84, 41], [87, 66, 0], [173, 119, 108], [74, 74, 74],
+                [129, 129, 129], [166, 218, 149], [98, 103, 179], [170, 170, 170]
+            ];
+
+            // 2. Helper function to find the closest color
+            function getClosestColor(r, g, b) {
+                let minDistance = Infinity;
+                let closest = C64_PALETTE[0];
+
+                for (const color of C64_PALETTE) {
+                    const dr = r - color[0];
+                    const dg = g - color[1];
+                    const db = b - color[2];
+                    const distance = dr * dr + dg * dg + db * db; // Squaring is enough, no need for sqrt
+
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closest = color;
+                    }
+                }
+                return closest;
+            }
+
+            function draw() {
+                // each frame draw video to the top corner of the canvas
+                // this way you do not need an offscreen buffer 
+
+                //ctx.drawImage(video, 0, 0, COLS, ROWS); // simple
+                // make it mirrored
+                ctx.save();
+                ctx.translate(video.width, 0);
+                ctx.scale(-1, 1);
+                ctx.drawImage(video, 0, 0, COLS, ROWS);
+                ctx.restore();
+
+
+                const pixels = ctx.getImageData(0, 0, COLS, ROWS).data;
+
+                // 2. Clear canvas with C64 Blue or Black
+                ctx.fillStyle = "#3e31a1"; // Classic C64 Background Blue
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // 3. Set up Text properties
+
+                ctx.font = `bold ${SIZE}px monospace`;
+
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+
+                for (let y = 0; y < ROWS; y++) {
+                    for (let x = 0; x < COLS; x++) {
+                        const i = (y * COLS + x) * 4;
+                        const r = pixels[i];
+                        const g = pixels[i + 1];
+                        const b = pixels[i + 2];
+
+                        // Calculate Brightness (0 to 255)
+                        const brightness = (r + g + b) / 3;
+
+                        // Map brightness to one of our 5 PETSCII characters
+                        const charIndex = Math.floor((brightness / 255) * (PETSCII.length - 1));
+                        const char = PETSCII[charIndex];
+
+                        // Get the C64 color for the font
+                        const [finalR, finalG, finalB] = getClosestColor(r, g, b);
+                        ctx.fillStyle = `rgb(${finalR},${finalG},${finalB})`;
+
+                        // Draw the character in the center of the 20x20 grid cell
+                        // SAVE the canvas state
+                        ctx.save();
+
+                        // MOVE to the center of the cell
+                        ctx.translate(x * SIZE + SIZE / 2, y * SIZE + SIZE / 2);
+
+                        // STRETCH: 1.5 is the horizontal scale, 1.0 is vertical
+                        ctx.scale(1.6, 1.0);
+
+                        ctx.font = `bold ${SIZE}px monospace`;
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+
+                        // Draw at 0,0 because we used translate
+                        ctx.fillText(char, 0, 0);
+
+                        // RESTORE the canvas for the next pixel
+                        ctx.restore();
+                    }
+                }
+
+                requestAnimationFrame(draw);
+            }
+
+            draw();
+
+
+
+
+
+
+        </script>
+</body>
+
+</html>

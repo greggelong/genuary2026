@@ -43,7 +43,7 @@ function draw() {
   const pixels = imgData.data;
 
   // 4. Set text style
-  const resolution = 12; // How many pixels to skip (font size)
+  const resolution = 30; // How many pixels to skip (font size)
   ctx.font = `${resolution}px monospace`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
