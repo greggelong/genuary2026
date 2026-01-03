@@ -38,6 +38,9 @@
         canvas,
         webcam {
             border: 5px solid grey;
+
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+                "Liberation Mono", "Courier New", monospace;
         }
     </style>
 </head>
@@ -56,7 +59,11 @@
             <canvas id="canvas" width="800" height="500"></canvas>
         </div>
 
-        <video id="webcam" autoplay playsinline muted controls width="40" height="25" style="display: block;">
+        <!--- <video id="webcam" autoplay playsinline muted controls width="40" height="25" style="display: block;">
+        </video> -->
+
+        <video id="webcam" autoplay playsinline muted
+            style="position: absolute; opacity: 0; pointer-events: none; width: 40px; height: 25px;">
         </video>
 
         <script>
@@ -71,25 +78,27 @@
             const canvas = document.getElementById("canvas");
             const ctx = canvas.getContext("2d");
             const video = document.getElementById("webcam");
+
             // some fake petscii characters
 
             const PETSCII = ["█", "▓", "▒", "░", "　"]//.reverse();
 
-
-            setup()
-
             // web async function
             async function setup() {
                 try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: { width: 40, height: 25 }
+                    });
                     video.srcObject = stream;
+
+                    // CRITICAL: Wait for the video to actually have data frames ready
+                    video.onloadeddata = () => {
+                        video.play();
+                        draw(); // Only start the loop once data is flowing
+                    };
                 } catch (err) {
-                    console.error("Webcam access denied", err);
-
-                    // async function calls draw
-                    draw()
+                    console.error("Webcam error:", err);
                 }
-
             }
             // 1. Define the palette as RGB arrays for faster math
             const C64_PALETTE = [
@@ -127,7 +136,7 @@
                 ctx.save();
                 ctx.translate(video.width, 0);
                 ctx.scale(-1, 1);
-                ctx.drawImage(video, 0, 0, COLS, ROWS);
+                ctx.drawImage(video, -COLS, 0, COLS, ROWS);
                 ctx.restore();
 
 
@@ -172,7 +181,7 @@
                         // STRETCH: 1.5 is the horizontal scale, 1.0 is vertical
                         ctx.scale(1.6, 1.0);
 
-                        ctx.font = `bold ${SIZE}px monospace`;
+                        ctx.font = `${SIZE}px monospace`;
                         ctx.textAlign = "center";
                         ctx.textBaseline = "middle";
 
@@ -187,7 +196,7 @@
                 requestAnimationFrame(draw);
             }
 
-            draw();
+            setup();
 
 
 
