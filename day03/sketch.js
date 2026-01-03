@@ -40,19 +40,18 @@ function setup() {
 function draw() {
   background(15);
 
-  // 1. DRAW THE GRID
   drawGrid();
 
-  // 2. DRAW THE SPIRAL (Mathematical Logic)
+  // spiral, AI helped with this
   push();
   noFill();
   stroke(255, 255, 0);
   strokeWeight(4);
 
-  // This calculates how many "steps" of the spiral to draw based on music progress
+  // how many steps of the spiral
   let maxSteps = floor(map(currentIndex, 0, score.length, 1, 10));
 
-  // Starting parameters for the 800x494 Golden Rectangle
+  // start of the spiral
   let w = 494; // Size of the first square
   let x = 0;
   let y = 0;
@@ -65,7 +64,7 @@ function draw() {
     else if (i % 4 === 2) arc(x, y, w * 2, w * 2, 0, 90);
     else if (i % 4 === 3) arc(x + w, y, w * 2, w * 2, 90, 180);
 
-    // Update coordinates to the NEXT smaller golden square
+    // Update coordinates to the  smaller golden square
     let nextW = (w * (sqrt(5) - 1)) / 2; // Golden Ratio scaling
 
     if (i % 4 === 0) x += w;
@@ -110,7 +109,7 @@ function drawGrid() {
     }
   }
 }
-
+// need to cut back to fit grid
 function generateFibToLimit(limit) {
   fibstring = "11";
   let i = 0;
