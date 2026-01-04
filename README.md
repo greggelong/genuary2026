@@ -4,6 +4,8 @@
 
 ## note I quickly gave up the challenge of only vanilla javascript.
 
+yes I have quickly given up not consulting ai. not as an excuse but it is almost impossibe to search for help now and not get better help than stack overflow from gemini or others right in your browser. 
+
 for most of them I start with my own code then search for something and want to create
 
 something more interesting and turn to ai to help with code
