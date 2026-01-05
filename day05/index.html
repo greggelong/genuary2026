@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Binary Forest Explorer</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            color: #a5a9b4;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+
+        #ui-left {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+        }
+
+        #ui-right {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            background: rgba(15, 15, 15, 0.9);
+            padding: 15px;
+            border: 1px solid #00ffcc;
+            font-size: 0.85rem;
+            width: 220px;
+            pointer-events: none;
+        }
+
+        input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid #00ffcc;
+            color: #00ffcc;
+            font-family: inherit;
+            font-size: 2rem;
+            outline: none;
+            width: 400px;
+            padding: 5px;
+            pointer-events: auto;
+        }
+
+        .highlight {
+            color: #00ffcc;
+        }
+
+        .binary-val {
+            color: #fff;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="ui-left">
+        <input type="text" id="userInput" placeholder="type..." value="forest">
+    </div>
+
+    <div id="ui-right">
+        <div style="color: #00ffcc; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;">DATA
+            MAPPING</div>
+        <div id="mapping">...</div>
+        <div style="margin-top: 15px; font-size: 0.75rem; color: #888; border-top: 1px solid #333; padding-top: 10px;">
+            <span style="color: #e0e0e0;">BIT 1:</span> RIGHT TURN<br>
+            <span style="color: #a5a9b4;">BIT 0:</span> LEFT TURN<br>
+            <br>
+            <i style="color: #00ffcc">Forest Angle: 45°</i><br>
+            <i style="color: #00ffcc">Hero Sweep: 0° - 60°</i>
+        </div>
+    </div>
+
+    <canvas id="treeCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('treeCanvas');
+        const ctx = canvas.getContext('2d');
+        const input = document.getElementById('userInput');
+        const mappingUI = document.getElementById('mapping');
+
+        let turn = 3;
+        let shrink = 0.6;
+        let count = 0;
+        let armback = false;
+
+        const charMap = {
+            32: "a", 33: "b", 34: "c", 35: "d", 36: "e", 37: "f", 38: "g", 39: "h",
+            40: "i", 41: "j", 42: "k", 43: "l", 44: "m", 45: "n", 46: "o", 47: "p",
+            48: "q", 49: "r", 50: "s", 51: "t", 52: "u", 53: "v", 54: "w", 55: "x",
+            56: "y", 57: "z", 58: " ", 59: ".", 60: ",", 61: "!", 62: "?", 63: "-"
+        };
+
+        function getKeyFromValue(char) {
+            const key = Object.keys(charMap).find((key) => charMap[key] === char.toLowerCase());
+            return key || "63";
+        }
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function turtle(inString, clr, p, startSize, currentTurn, isHero, yOffset = 0) {
+            let sz = startSize;
+            let x = p;
+            let y = canvas.height - yOffset;
+
+            // Initial Trunk
+            let x1 = x;
+            let y1 = y - sz;
+            ctx.strokeStyle = clr;
+            ctx.lineWidth = sz / 8;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x1, y1);
+            ctx.stroke();
+
+            x = x1;
+            y = y1;
+            let ang = 90;
+            let instrarr = inString.split("");
+
+            for (let i = 1; i < instrarr.length; i++) {
+                // Logic: 0 = Left (add to ang), 1 = Right (subtract from ang)
+                if (instrarr[i] == "1") {
+                    ang -= currentTurn;
+                    ctx.strokeStyle = isHero ? "rgb(224, 224, 224)" : "rgba(255,255,255,0.9)";
+                } else if (instrarr[i] == "0") {
+                    ang += currentTurn;
+                    ctx.strokeStyle = isHero ? "rgb(165, 169, 180)" : "rgba(200,200,200,0.7)";
+                }
+
+                sz = sz * (isHero ? shrink : 0.62); // Slightly more shrink for forest to prevent overlap
+                let rad = ang * (Math.PI / 180);
+                x1 = x + sz * Math.cos(rad);
+                y1 = y - sz * Math.sin(rad);
+
+                ctx.lineWidth = Math.max(1.5, sz / 6);
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x1, y1);
+                ctx.stroke();
+
+                x = x1;
+                y = y1;
+            }
+        }
+
+        function animate() {
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const message = input.value || " ";
+
+            // 1. Static Forest - Increased Angle to 45 for more "turn"
+            const spacing = canvas.width / (message.length + 1);
+            message.split("").forEach((char, i) => {
+                let val = parseInt(getKeyFromValue(char));
+                let instr = val.toString(2);
+                let xPos = spacing * (i + 1);
+                turtle(instr, "white", xPos, 70, 45, false, 60); // 45 degree fixed turn
+
+                ctx.fillStyle = "#00ffcc";
+                ctx.font = "bold 14px monospace";
+                ctx.textAlign = "center";
+                ctx.fillText(char.toUpperCase(), xPos, canvas.height - 25);
+            });
+
+            // 2. Hero Tree 
+            if (count >= message.length) count = 0;
+            let activeChar = message[count];
+            let activeVal = parseInt(getKeyFromValue(activeChar));
+            let activeInstr = activeVal.toString(2);
+
+            mappingUI.innerHTML = `CHAR: <span class="highlight">${activeChar.toUpperCase()}</span><br>MAP: <span class="highlight">${activeVal}</span><br>BIN: <span class="binary-val">${activeInstr}</span>`;
+
+            // Centered and moved up
+            turtle(activeInstr, "rgb(165, 169, 180)", canvas.width / 2, canvas.height / 4, turn, true, 280);
+
+            // 3. Animation Logic (Sweep 0 to 60)
+            if (!armback) {
+                turn += 0.8;
+                if (turn >= 60) armback = true;
+            } else {
+                turn -= 0.8;
+                if (turn < 0) {
+                    armback = false;
+                    count++;
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        animate();
+    </script>
+</body>
+
+</html>
