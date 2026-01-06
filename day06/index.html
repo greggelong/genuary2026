@@ -1,23 +1,141 @@
 <!DOCTYPE html>
-<html>
-    <head>
+<html lang="en">
 
-    </head>
-    <body>
-    
-<canvas id="mycanvas"></canvas>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: blue;
+        }
+
+        canvas {
+            /*border: 4px solid black;*/
+            background-color: rgb(97, 19, 69)
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="mycanvas"></canvas>
+
+    <script>
+        let lastTime = 0;
+        const interval = 100; // Time in milliseconds (200ms = 5 frames per second)
+        const cnv = document.getElementById("mycanvas")
+        const ctx = cnv.getContext('2d')
+        cnv.width = 806
+        cnv.height = 806
+        let gridsz = 40
+        let csz = Math.floor(cnv.width / gridsz)//cell size
+        let tick = 1
 
 
-<script>
-    const cnv = document.getElementById("mycanvas")
-    const ctx = cnv.getContext("2d")
-    cnv.width = 800
-    cnv.height = 800
-    cnv.style = "background-color: rgb(255,104,203)"
+
+        const grid = []
+
+
+        function makeGrid(sz) {
+            for (let j = 0; j < sz; j++) {
+                grid[j] = []
+                for (let i = 0; i < sz; i++) {
+                    grid[j][i] = 0 //Math.floor(Math.random() * 2)
+                }
+
+            }
+
+        }
+
+        function updateGrid(gen) {
+            for (let j = 0; j < gridsz; j++) {
+                for (let i = 0; i < gridsz; i++) {
+
+                    let n = (j * gridsz) + i + 1
+                    // turn on or off condition
+                    // if off turn it on
+                    if (grid[j][i] == 0) {
+                        if (n % gen == 0) {
+                            grid[j][i] = 1
+                        }
+
+                    } else if (grid[j][i] == 1) { // if it is on
+                        if (n % gen == 0) {
+                            grid[j][i] = 0
+                        }
+                    }
+
+                }
+            }
+        }
 
 
 
-</script>
+
+        function showGrid() {
+            for (let j = 0; j < gridsz; j++) {
+                for (let i = 0; i < gridsz; i++) {
+                    if (grid[j][i] == 1) {
+                        ctx.fillStyle = 'rgb(255,255,0)'
+
+                    } else {
+                        ctx.fillStyle = 'rgb(0,0,0)'
+                    }
+                    ctx.beginPath()
+                    ctx.rect(i * csz + 6, j * csz + 6, csz - 6, csz - 6)
+                    ctx.fill()
+                    //ctx.font = "30px Arial";
+                    ctx.fillStyle = "rgb(255,0,0)"
+                    ctx.font = "12px Arial";
+                    ctx.textAlign = "start";   // Horizontal center
+                    ctx.textBaseline = "middle"; // Vertical center
+                    //ctx.fillText((j * gridsz) + i + 1, (i * csz) + 10, (j * csz) + csz / 2)
+
+
+                }
+            }
+        }
+
+
+
+
+        function step(frameTime) { // pass a variable here it returs a time
+
+
+            // How much time has passed since the very last frame?
+            const deltaTime = frameTime - lastTime;
+            console.log(tick)
+            //  check
+            if (deltaTime >= interval) {
+                updateGrid(tick);
+                showGrid();
+
+                lastTime = frameTime
+                tick++
+                if (tick > gridsz * gridsz) {
+                    makeGrid(gridsz)
+                    showGrid()
+                    tick = 1
+                }
+
+            }
+            requestAnimationFrame(step);
+        }
+
+
+        makeGrid(gridsz);
+        showGrid()
+        step()
+
+    </script>
+
+
 </body>
 
 </html>
