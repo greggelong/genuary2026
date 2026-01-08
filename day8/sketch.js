@@ -7,7 +7,7 @@ let buildings = [];
         let animationSpeed = 0.03;
 
         function setup() {
-            createCanvas(windowWidth * 0.9, windowHeight * 0.8);
+            createCanvas(windowWidth * 1, windowHeight * 1);
             const constraints = {
                 video: {
                     facingMode: "environment",
@@ -32,15 +32,16 @@ let buildings = [];
             buildings = [];
             displayWords = [];
             currentBuildingIndex = 0;
-            let numberOfBuildings = 12;
+            let numberOfBuildings = 8;
             
             // Generate Buildings
             for (let i = 0; i < numberOfBuildings; i++) {
-                let bHeight = random(100, 400);
-                let bWidth = random(30, 80);
-                let angleLimit = map(bHeight, 100, 400, 10, 35);
-                let maxAngle = random(angleLimit * 0.7, angleLimit);
-                let totalLines = floor(map(bHeight, 100, 400, 8, 25));
+                 let bHeight = random(height * 0.4, height * 0.65);
+                let bWidth = random(width * 0.08, width * 0.18);
+                
+                let angleLimit = map(bHeight, 100, height * 0.8, 8, 25);
+                let maxAngle = random(angleLimit * 0.6, angleLimit);
+                let totalLines = floor(map(bHeight, 100, height, 15, 40));
                 let topY = baseLineY - bHeight;
 
                 buildings.push({
@@ -60,7 +61,7 @@ let buildings = [];
                     text: random(words),
                     x: random(width * 0.1, width * 0.9),
                     y: random(height * 0.05, height * 0.2),
-                    size: random(16, 32),
+                    size: random(32, 48),
                     opacity: random(150, 255)
                 });
             }
