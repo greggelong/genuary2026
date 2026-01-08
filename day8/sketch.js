@@ -73,7 +73,15 @@ let buildings = [];
         function draw() {
             // Background is the webcam feed
             tint(200, 50, 100); 
-            image(capture, 0, 0, width, height);
+           // DISTORTION FIX: Center and scale (Cover logic)
+            push();
+            background(0);
+            imageMode(CENTER);
+            let scale = Math.max(width / capture.width, height / capture.height);
+            let valW = capture.width * scale;
+            let valH = capture.height * scale;
+            image(capture, width / 2, height / 2, valW, valH);
+            pop();
             noTint();
             
             drawFloatingText();
