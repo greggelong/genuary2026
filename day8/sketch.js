@@ -18,7 +18,7 @@ let buildings = [];
             };
             // Initialize Webcam
             capture = createCapture(VIDEO, constraints);
-            capture.size(width, height);
+            capture.size(width/2, height/2);
             capture.hide();
 
             colorMode(HSB, 360, 255, 255, 255);
