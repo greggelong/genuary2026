@@ -24,7 +24,7 @@ let buildings = [];
             colorMode(HSB, 360, 255, 255, 255);
             angleMode(DEGREES);
             baseLineY = height * 0.85;
-            
+            pixelDensity(1);
             generateCity();
         }
 
