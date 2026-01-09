@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webcam Mirror Game of Life</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #000;
+        }
+
+        canvas {
+            background-color: #111;
+            border: 2px solid #333;
+        }
+
+        video {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <video id="webcam" autoplay playsinline></video>
+    <canvas id="mycanvas"></canvas>
+
+    <script>
+        const cnv = document.getElementById("mycanvas");
+        const ctx = cnv.getContext('2d');
+        const video = document.getElementById('webcam');
+
+        cnv.width = 800;
+        cnv.height = 800;
+
+        let gridsz = 100;
+        let csz = cnv.width / gridsz;
+        let grid = [];
+        let nextGrid = [];
+
+        async function setupWebcam() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                video.srcObject = stream;
+            } catch (err) {
+                console.error("Webcam access denied: ", err);
+            }
+        }
+
+        function makeGrid(sz) {
+            for (let j = 0; j < sz; j++) {
+                grid[j] = [];
+                nextGrid[j] = [];
+                for (let i = 0; i < sz; i++) {
+                    grid[j][i] = Math.random() > 0.35 ? 1 : 0;
+                    nextGrid[j][i] = 0;
+                }
+            }
+        }
+
+        function countNeighbors(row, col) {
+            let sum = 0;
+            for (let i = -1; i < 2; i++) {
+                for (let j = -1; j < 2; j++) {
+                    let r = (row + i + gridsz) % gridsz;
+                    let c = (col + j + gridsz) % gridsz;
+                    sum += grid[r][c];
+                }
+            }
+            sum -= grid[row][col];
+            return sum;
+        }
+
+        function updateGrid() {
+            for (let j = 0; j < gridsz; j++) {
+                for (let i = 0; i < gridsz; i++) {
+                    let neighbors = countNeighbors(j, i);
+                    if (grid[j][i] == 0 && neighbors == 3) nextGrid[j][i] = 1;
+                    else if (grid[j][i] == 1 && (neighbors < 2 || neighbors > 3)) nextGrid[j][i] = 0;
+                    else nextGrid[j][i] = grid[j][i];
+                }
+            }
+            for (let j = 0; j < gridsz; j++) {
+                for (let i = 0; i < gridsz; i++) grid[j][i] = nextGrid[j][i];
+            }
+        }
+
+        function showGrid() {
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, cnv.width, cnv.height);
+
+            ctx.save();
+            ctx.translate(cnv.width, 0);
+            ctx.scale(-1, 1);
+
+            for (let j = 0; j < gridsz; j++) {
+                for (let i = 0; i < gridsz; i++) {
+                    if (grid[j][i] == 1) {
+                        ctx.drawImage(
+                            video,
+                            (i / gridsz) * video.videoWidth, (j / gridsz) * video.videoHeight,
+                            video.videoWidth / gridsz, video.videoHeight / gridsz,
+                            i * csz, j * csz, csz - 1, csz - 1
+                        );
+                    }
+                }
+            }
+            ctx.restore();
+        }
+
+        function step(frameTime) {
+            updateGrid();
+            showGrid();
+            setTimeout(() => {
+                requestAnimationFrame(step);
+            }, 10); //speed
+        }
+
+        // --- FIXED INTERACTION LOGIC ---
+        cnv.addEventListener('mousedown', (e) => {
+            const rect = cnv.getBoundingClientRect();
+            let mouseX = e.clientX - rect.left;
+            let mouseY = e.clientY - rect.top;
+
+            let col = Math.floor(mouseX / csz);
+            let row = Math.floor(mouseY / csz);
+
+            // Flip the column calculation so the click matches the mirrored visual
+            col = (gridsz - 1) - col;
+
+            // Adding the glider pattern
+            [[0, 1], [1, 2], [2, 0], [2, 1], [2, 2]].forEach(o => {
+                let r = (row + o[0] + gridsz) % gridsz;
+                let c = (col + o[1] + gridsz) % gridsz;
+                grid[r][c] = 1;
+            });
+        });
+
+        setupWebcam();
+        makeGrid(gridsz);
+        requestAnimationFrame(step);
+    </script>
+</body>
+
+</html>

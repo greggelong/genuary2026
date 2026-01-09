@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game of Life</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #1a1a1a;
+        }
+
+        canvas {
+            background-color: rgb(30, 30, 30);
+            border: 2px solid #444;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="mycanvas"></canvas>
+
+    <script>
+        let lastTime = 0;
+        const interval = 100;
+        const cnv = document.getElementById("mycanvas");
+        const ctx = cnv.getContext('2d');
+        cnv.width = 800;
+        cnv.height = 800;
+
+        let gridsz = 20; // Increased grid size for better simulation
+        let csz = cnv.width / gridsz;
+
+        let grid = [];
+        let nextGrid = []; // The "buffer" array to store calculations
+
+        // 1. Initialize both grids
+        function makeGrid(sz) {
+            for (let j = 0; j < sz; j++) {
+                grid[j] = [];
+                nextGrid[j] = [];
+                for (let i = 0; i < sz; i++) {
+                    // Randomly seed the board (0 or 1)
+                    grid[j][i] = Math.random() > 0.8 ? 1 : 0;
+                    nextGrid[j][i] = 0;
+                }
+            }
+        }
+
+        // 2. The Neighbor Counter
+        function countNeighbors(row, col) {
+            let sum = 0;
+            for (let i = -1; i < 2; i++) {
+                for (let j = -1; j < 2; j++) {
+                    // Modulo arithmetic allows "wrapping" around the edges of the screen
+                    let r = (row + i + gridsz) % gridsz;
+                    let c = (col + j + gridsz) % gridsz;
+                    sum += grid[r][c];
+                }
+            }
+            // Subtract the center cell itself (since we only want neighbors)
+            sum -= grid[row][col];
+            return sum;
+        }
+
+        // 3. The Core Update Function
+        function updateGrid() {
+            // Calculate everything into 'nextGrid' first
+            for (let j = 0; j < gridsz; j++) {
+                for (let i = 0; i < gridsz; i++) {
+                    let state = grid[j][i];
+                    let neighbors = countNeighbors(j, i);
+
+                    if (state == 0 && neighbors == 3) {
+                        nextGrid[j][i] = 1; // Reproduction
+                    } else if (state == 1 && (neighbors < 2 || neighbors > 3)) {
+                        nextGrid[j][i] = 0; // Death
+                    } else {
+                        nextGrid[j][i] = state; // Survival / Stay dead
+                    }
+                }
+            }
+
+            // 4. Deep Copy: Move 'nextGrid' states back into 'grid'
+            for (let j = 0; j < gridsz; j++) {
+                for (let i = 0; i < gridsz; i++) {
+                    grid[j][i] = nextGrid[j][i];
+                }
+            }
+        }
+
+        function showGrid() {
+            ctx.clearRect(0, 0, cnv.width, cnv.height);
+            for (let j = 0; j < gridsz; j++) {
+                for (let i = 0; i < gridsz; i++) {
+                    if (grid[j][i] == 1) {
+                        ctx.fillStyle = '#00FF41'; // Matrix Green
+                        ctx.fillRect(i * csz, j * csz, csz - 1, csz - 1);
+                    }
+                }
+            }
+        }
+
+        function step(frameTime) {
+            const deltaTime = frameTime - lastTime;
+            if (deltaTime >= interval) {
+                updateGrid();
+                showGrid();
+                lastTime = frameTime;
+            }
+            requestAnimationFrame(step);
+        }
+
+
+        // 1. Add the Event Listener to the canvas
+        cnv.addEventListener('mousedown', function (e) {
+            // Get the bounding box of the canvas to calculate correct mouse position
+            const rect = cnv.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            // Convert pixel coordinates to grid coordinates
+            let col = Math.floor(x / csz);
+            let row = Math.floor(y / csz);
+
+            // Call the function to place the glider
+            addGlider(row, col);
+        });
+
+        // 2. The Glider Placement Function
+        function addGlider(r, c) {
+            // We define the glider as a list of relative [row, col] offsets
+            const gliderOffsets = [
+                [0, 1],
+                [1, 2],
+                [2, 0], [2, 1], [2, 2]
+            ];
+
+            gliderOffsets.forEach(offset => {
+                // Use modulo (%) so that if we click near the edge, 
+                // the glider parts wrap around instead of causing an error
+                let targetRow = (r + offset[0] + gridsz) % gridsz;
+                let targetCol = (c + offset[1] + gridsz) % gridsz;
+
+                grid[targetRow][targetCol] = 1;
+            });
+
+            // Refresh the display immediately so it feels responsive
+            showGrid();
+        }
+
+        makeGrid(gridsz);
+        requestAnimationFrame(step);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webcam Mirror Game of Life</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #050505;
+            color: white;
+            font-family: sans-serif;
+        }
+
+        canvas {
+            background-color: #000;
+            border: 3px solid #333;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+
+        /* Your requested video element style */
+        #webcam {
+            display: block;
+            border: 1px solid #444;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <video id="webcam" autoplay playsinline muted controls width="160" height="120"></video>
+
+    <canvas id="mycanvas"></canvas>
+
+    <script>
+        const video = document.getElementById('webcam');
+        const cnv = document.getElementById("mycanvas");
+        const ctx = cnv.getContext('2d');
+
+        cnv.width = 750;
+        cnv.height = 750;
+
+        let gridsz = 25;
+        let csz = cnv.width / gridsz;
+        let grid = [];
+        let nextGrid = [];
+
+        // 1. Get Webcam access
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => { video.srcObject = stream; })
+            .catch(err => console.error("Webcam error:", err));
+
+        function makeGrid(sz) {
+            for (let j = 0; j < sz; j++) {
+                grid[j] = [];
+                nextGrid[j] = [];
+                for (let i = 0; i < sz; i++) {
+                    grid[j][i] = Math.random() > 0.8 ? 1 : 0;
+                }
+            }
+        }
+
+        function updateGrid() {
+            for (let j = 0; j < gridsz; j++) {
+                for (let i = 0; i < gridsz; i++) {
+                    let neighbors = 0;
+                    // Efficient neighbor count
+                    for (let y = -1; y <= 1; y++) {
+                        for (let x = -1; x <= 1; x++) {
+                            if (x === 0 && y === 0) continue;
+                            let r = (j + y + gridsz) % gridsz;
+                            let c = (i + x + gridsz) % gridsz;
+                            neighbors += grid[r][c];
+                        }
+                    }
+
+                    if (grid[j][i] === 1 && (neighbors < 2 || neighbors > 3)) nextGrid[j][i] = 0;
+                    else if (grid[j][i] === 0 && neighbors === 3) nextGrid[j][i] = 1;
+                    else nextGrid[j][i] = grid[j][i];
+                }
+            }
+            // Swap grids (Deep Copy)
+            for (let j = 0; j < gridsz; j++) {
+                for (let i = 0; i < gridsz; i++) grid[j][i] = nextGrid[j][i];
+            }
+        }
+
+        function showGrid() {
+            // Clear with a slight fade effect
+            ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+            ctx.fillRect(0, 0, cnv.width, cnv.height);
+
+            // Calculate the size of one "slice" of the source video
+            let sourceW = video.videoWidth / gridsz;
+            let sourceH = video.videoHeight / gridsz;
+
+            for (let j = 0; j < gridsz; j++) {
+                for (let i = 0; i < gridsz; i++) {
+                    if (grid[j][i] === 1) {
+                        // THE MAGIC LINE: drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight)
+                        ctx.drawImage(
+                            video,
+                            i * sourceW, j * sourceH, sourceW, sourceH, // Source (the webcam)
+                            i * csz, j * csz, csz - 1, csz - 1           // Destination (the canvas)
+                        );
+                    }
+                }
+            }
+        }
+
+        let lastTime = 0;
+        function step(time) {
+            if (time - lastTime > 10) { // Run at 10 FPS
+                updateGrid();
+                showGrid();
+                lastTime = time;
+            }
+            requestAnimationFrame(step);
+        }
+
+        // Add Glider on click
+        cnv.addEventListener('mousedown', (e) => {
+            const rect = cnv.getBoundingClientRect();
+            let col = Math.floor((e.clientX - rect.left) / csz);
+            let row = Math.floor((e.clientY - rect.top) / csz);
+            [[0, 1], [1, 2], [2, 0], [2, 1], [2, 2]].forEach(o => {
+                grid[(row + o[0] + gridsz) % gridsz][(col + o[1] + gridsz) % gridsz] = 1;
+            });
+        });
+
+        makeGrid(gridsz);
+        requestAnimationFrame(step);
+    </script>
+</body>
+
+</html>
