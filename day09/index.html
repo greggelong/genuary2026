@@ -1,41 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Webcam Mirror Game of Life</title>
     <style>
         body {
-            display: flex;
-            flex-direction: column;
-            /* Stack slider above canvas */
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
             background-color: #000;
             color: white;
-            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            padding-top: env(safe-area-inset-top, 20px);
+            /* 'manipulation' allows pinch-zoom but disables double-tap-to-zoom (which is annoying) */
+            touch-action: manipulation;
+            font-family: sans-serif;
+        }
+
+        .controls {
+            background: rgba(40, 40, 40, 0.9);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 12px;
+            z-index: 100;
+            /* Keep controls above everything */
+            display: flex;
+            gap: 12px;
+            align-items: center;
         }
 
         canvas {
             background-color: #111;
-            border: 2px solid #333;
+            border: 1px solid #333;
+            max-width: 95vw;
+            height: auto;
+            display: block;
+            /* Critical for adding gliders accurately while zoomed */
+            cursor: crosshair;
         }
 
         video {
             display: none;
-        }
-
-        .controls {
-            margin-bottom: 10px;
-            background: #222;
-            padding: 10px 20px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
         }
     </style>
 </head>
