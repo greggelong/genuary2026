@@ -3,48 +3,102 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webcam Mirror Game of Life</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Webcam Mirror Life - Ultimate Edition</title>
     <style>
         body {
-            display: flex;
-            flex-direction: column;
-            /* Stack slider above canvas */
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
             background-color: #000;
             color: white;
-            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            padding-top: env(safe-area-inset-top, 20px);
+            font-family: system-ui, -apple-system, sans-serif;
+            touch-action: manipulation;
+            overflow-x: hidden;
+        }
+
+        .controls {
+            background: rgba(30, 30, 30, 0.95);
+            padding: 12px;
+            margin: 10px;
+            border-radius: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            border: 1px solid #444;
+            max-width: 95vw;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
         }
 
         canvas {
             background-color: #111;
             border: 2px solid #333;
+            max-width: 95vw;
+            max-height: 65vh;
+            height: auto;
+            display: block;
+            image-rendering: pixelated;
         }
 
         video {
             display: none;
         }
 
-        .controls {
-            margin-bottom: 10px;
-            background: #222;
-            padding: 10px 20px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
+        button {
+            background: #444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        button:hover {
+            background: #666;
+        }
+
+        input[type=range] {
+            width: 80px;
         }
     </style>
 </head>
 
 <body>
+
     <div class="controls">
-        <label for="gridSlider">Grid Resolution:</label>
-        <input type="range" id="gridSlider" min="25" max="100" value="100" step="1">
-        <span id="resVal">100</span>
+        <div class="control-group">
+            <label>Resolution</label>
+            <input type="range" id="gridSlider" min="20" max="100" value="50">
+        </div>
+        <div class="control-group">
+            <label>Delay</label>
+            <input type="range" id="speedSlider" min="0" max="300" value="50">
+        </div>
+        <div class="control-group">
+            <button id="clearBtn">Clear</button>
+            <button id="randomBtn">Random</button>
+        </div>
+        <div class="control-group">
+            <select id="presetSelect">
+                <option value="glider">Glider</option>
+                <option value="gosper">Gosper Gun</option>
+                <option value="pulsar">Pulsar</option>
+            </select>
+        </div>
     </div>
 
     <video id="webcam" autoplay playsinline></video>
@@ -54,45 +108,30 @@
         const cnv = document.getElementById("mycanvas");
         const ctx = cnv.getContext('2d');
         const video = document.getElementById('webcam');
-        const slider = document.getElementById('gridSlider');
-        const resVal = document.getElementById('resVal');
+        const gridSlider = document.getElementById('gridSlider');
+        const speedSlider = document.getElementById('speedSlider');
+        const presetSelect = document.getElementById('presetSelect');
 
         cnv.width = 800;
         cnv.height = 800;
 
-        let gridsz = parseInt(slider.value);
+        let gridsz = parseInt(gridSlider.value);
         let csz = cnv.width / gridsz;
         let grid = [];
-        let nextGrid = [];
-
-        // 1. Handle Slider Changes
-        slider.addEventListener('input', () => {
-            gridsz = parseInt(slider.value);
-            resVal.innerText = gridsz;
-            csz = cnv.width / gridsz;
-            makeGrid(gridsz); // Re-initialize the board
-        });
 
         async function setupWebcam() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
                 video.srcObject = stream;
-            } catch (err) {
-                console.error("Webcam access denied: ", err);
-            }
+            } catch (err) { alert("Please enable webcam for the effects."); }
         }
 
-        function makeGrid(sz) {
-            grid = [];
-            nextGrid = [];
+        function createEmptyGrid(sz) {
+            let arr = [];
             for (let j = 0; j < sz; j++) {
-                grid[j] = [];
-                nextGrid[j] = [];
-                for (let i = 0; i < sz; i++) {
-                    grid[j][i] = Math.random() > 0.35 ? 1 : 0;
-                    nextGrid[j][i] = 0;
-                }
+                arr[j] = new Uint8Array(sz);
             }
+            return arr;
         }
 
         function countNeighbors(row, col) {
@@ -109,17 +148,18 @@
         }
 
         function updateGrid() {
+            let next = createEmptyGrid(gridsz);
             for (let j = 0; j < gridsz; j++) {
                 for (let i = 0; i < gridsz; i++) {
-                    let neighbors = countNeighbors(j, i);
-                    if (grid[j][i] == 0 && neighbors == 3) nextGrid[j][i] = 1;
-                    else if (grid[j][i] == 1 && (neighbors < 2 || neighbors > 3)) nextGrid[j][i] = 0;
-                    else nextGrid[j][i] = grid[j][i];
+                    let n = countNeighbors(j, i);
+                    if (grid[j][i] === 1) {
+                        next[j][i] = (n === 2 || n === 3) ? 1 : 0;
+                    } else {
+                        next[j][i] = (n === 3) ? 1 : 0;
+                    }
                 }
             }
-            for (let j = 0; j < gridsz; j++) {
-                for (let i = 0; i < gridsz; i++) grid[j][i] = nextGrid[j][i];
-            }
+            grid = next;
         }
 
         function showGrid() {
@@ -130,18 +170,16 @@
             ctx.translate(cnv.width, 0);
             ctx.scale(-1, 1);
 
-            // We calculate source dimensions once per frame
-            const vW = video.videoWidth;
-            const vH = video.videoHeight;
+            const vW = video.videoWidth || 640;
+            const vH = video.videoHeight || 480;
 
             for (let j = 0; j < gridsz; j++) {
                 for (let i = 0; i < gridsz; i++) {
-                    if (grid[j][i] == 1) {
+                    if (grid[j][i] === 1) {
                         ctx.drawImage(
                             video,
-                            (i / gridsz) * vW, (j / gridsz) * vH,
-                            vW / gridsz, vH / gridsz,
-                            i * csz, j * csz, csz, csz // Removed -1 for cleaner high-res look
+                            (i / gridsz) * vW, (j / gridsz) * vH, vW / gridsz, vH / gridsz,
+                            i * csz, j * csz, csz, csz
                         );
                     }
                 }
@@ -149,31 +187,62 @@
             ctx.restore();
         }
 
-        function step(frameTime) {
-            updateGrid();
-            showGrid();
-            requestAnimationFrame(step);
+        function handleAction(e) {
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const rect = cnv.getBoundingClientRect();
+
+            const normX = (clientX - rect.left) / rect.width;
+            const normY = (clientY - rect.top) / rect.height;
+
+            let col = Math.floor(normX * gridsz);
+            let row = Math.floor(normY * gridsz);
+            col = (gridsz - 1) - col; // Mirror adjustment
+
+            const type = presetSelect.value;
+            if (type === 'glider') {
+                [[0, 1], [1, 2], [2, 0], [2, 1], [2, 2]].forEach(o => {
+                    grid[(row + o[0] + gridsz) % gridsz][(col + o[1] + gridsz) % gridsz] = 1;
+                });
+            } else if (type === 'pulsar') {
+                const p = [2, 3, 4, 8, 9, 10];
+                p.forEach(z => {
+                    grid[(row + z) % gridsz][col] = 1;
+                    grid[row][(col + z) % gridsz] = 1;
+                });
+            } else if (type === 'gosper') {
+                const pattern = [[5, 1], [5, 2], [6, 1], [6, 2], [5, 11], [6, 11], [7, 11], [4, 12], [8, 12], [3, 13], [9, 13], [3, 14], [9, 14], [6, 15], [4, 16], [8, 16], [5, 17], [6, 17], [7, 17], [6, 18], [3, 21], [4, 21], [5, 21], [3, 22], [4, 22], [5, 22], [2, 23], [6, 23], [1, 25], [2, 25], [6, 25], [7, 25], [3, 35], [4, 35], [3, 36], [4, 36]];
+                pattern.forEach(o => {
+                    grid[(row + o[0] + gridsz) % gridsz][(col + o[1] + gridsz) % gridsz] = 1;
+                });
+            }
         }
 
-        cnv.addEventListener('mousedown', (e) => {
-            const rect = cnv.getBoundingClientRect();
-            let mouseX = e.clientX - rect.left;
-            let mouseY = e.clientY - rect.top;
+        cnv.addEventListener('mousedown', handleAction);
+        cnv.addEventListener('touchstart', (e) => { e.preventDefault(); handleAction(e); }, { passive: false });
 
-            let col = Math.floor(mouseX / csz);
-            let row = Math.floor(mouseY / csz);
-            col = (gridsz - 1) - col;
-
-            [[0, 1], [1, 2], [2, 0], [2, 1], [2, 2]].forEach(o => {
-                let r = (row + o[0] + gridsz) % gridsz;
-                let c = (col + o[1] + gridsz) % gridsz;
-                grid[r][c] = 1;
-            });
+        gridSlider.addEventListener('input', () => {
+            gridsz = parseInt(gridSlider.value);
+            csz = cnv.width / gridsz;
+            grid = createEmptyGrid(gridsz);
         });
 
+        document.getElementById('clearBtn').onclick = () => grid = createEmptyGrid(gridsz);
+        document.getElementById('randomBtn').onclick = () => {
+            for (let j = 0; j < gridsz; j++) for (let i = 0; i < gridsz; i++) grid[j][i] = Math.random() > 0.7 ? 1 : 0;
+        };
+
+        function loop() {
+            updateGrid();
+            showGrid();
+            setTimeout(() => {
+                requestAnimationFrame(loop);
+            }, parseInt(speedSlider.value));
+        }
+
         setupWebcam();
-        makeGrid(gridsz);
-        requestAnimationFrame(step);
+        grid = createEmptyGrid(gridsz);
+        loop();
     </script>
 </body>
 
