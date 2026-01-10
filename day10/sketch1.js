@@ -7,38 +7,16 @@ let vol = 0;
 let volSmooth = 0;
 let audioStarted = false;
 
-// ---- TEXT CONTENT ----
-let slogansEN = [
-  "THE NOISE IS THE FLOWER",
-  "THE SOUND IS THE CURVE",
-  "THE SIGNAL BENDS SPACE",
-  "LISTENING IS MEASUREMENT",
-  "FORM IS A CONSEQUENCE",
-  "THE ENVIRONMENT SPEAKS"
-];
-
-let slogansZH = [
-  "噪音即花",
-  "声音即曲线",
-  "信号弯曲空间",
-  "聆听即测量",
-  "形式是结果",
-  "环境在发声"
-];
-
-let scrollX_EN = 0;
-let scrollX_ZH = 0;
-let sloganIndex = 0;
-
 function setup() {
   createCanvas(windowWidth, windowHeight);
   angleMode(DEGREES);
   pixelDensity(1);
 
+  stroke(255);
   strokeWeight(width * 0.03);
   noFill();
 
-  // ---- CAMERA (ENVIRONMENT) ----
+  // ---- CAMERA SETUP (environment) ----
   let constraints = {
     video: {
       facingMode: "environment",
@@ -59,18 +37,19 @@ function draw() {
   drawVideoFill();
 
   // temporal fade (motion memory)
-  noStroke();
   fill(0, 18);
+  noStroke();
   rect(0, 0, width, height);
 
-  // audio
+  // get mic volume
   vol = mic.getLevel();
   volSmooth = lerp(volSmooth, vol, 0.1);
 
+  // audio mappings
   mx = map(volSmooth, 0, 0.2, 1, 10, true);
   my = map(abs(volSmooth - vol), 0, 0.05, 1, 10, true);
 
-  // draw figures as light
+  // optical blending for figures
   blendMode(SCREEN);
 
   push();
@@ -83,15 +62,12 @@ function draw() {
 
   blendMode(BLEND);
 
-  // scrolling text
-  drawScrollingText();
-
-  // contrast lock
+  // contrast lock (stabilizes phone exposure)
   fill(0, 30);
   rect(0, 0, width, height);
 }
 
-// ---- VIDEO DRAW (CROPPED TO FILL) ----
+// ---- VIDEO DRAW (cropped to fill canvas) ----
 function drawVideoFill() {
   let videoAspect = video.width / video.height;
   let canvasAspect = width / height;
@@ -142,34 +118,8 @@ function fig2(r, px, py) {
   endShape();
 }
 
-// ---- SCROLLING TEXT ----
-function drawScrollingText() {
-  textAlign(LEFT, CENTER);
-  textSize(width * 0.1);
-  noStroke();
-
-  let speed = 1;
-
-  // Chinese (top)
-  fill(255,0,0, 220);
-  let zh = slogansZH[sloganIndex];
-  let zhW = textWidth(zh);
-  text(zh, width - scrollX_ZH, height * 0.2);
-  scrollX_ZH += speed;
-  if (scrollX_ZH > width + zhW + 40) {
-    scrollX_ZH = 0;
-  }
-
-  // English (bottom)
-  fill(255,0,0, 200);
-  let en = slogansEN[sloganIndex];
-  let enW = textWidth(en);
-  text(en, scrollX_EN - enW, height * 0.8);
-  scrollX_EN += speed;
-  if (scrollX_EN > width + enW + 40) {
-    scrollX_EN = 0;
-    sloganIndex = (sloganIndex + 1) % slogansEN.length;
-  }
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
 }
 
 // ---- AUDIO UNLOCK ----
@@ -178,14 +128,11 @@ function mousePressed() {
     userStartAudio();
     mic.start();
     audioStarted = true;
+    console.log("Audio unlocked");
   }
 }
 
 function touchStarted() {
   mousePressed();
   return false;
-}
-
-function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
 }
