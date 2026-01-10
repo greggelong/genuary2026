@@ -154,7 +154,7 @@ function drawScrollingText() {
   fill(255,0,0, 220);
   let zh = slogansZH[sloganIndex];
   let zhW = textWidth(zh);
-  text(zh, width - scrollX_ZH, height * 0.2);
+  text(zh, width - scrollX_ZH, height * 0.1);
   scrollX_ZH += speed;
   if (scrollX_ZH > width + zhW + 40) {
     scrollX_ZH = 0;
@@ -164,7 +164,7 @@ function drawScrollingText() {
   fill(255,0,0, 200);
   let en = slogansEN[sloganIndex];
   let enW = textWidth(en);
-  text(en, scrollX_EN - enW, height * 0.8);
+  text(en, scrollX_EN - enW, height * 0.9);
   scrollX_EN += speed;
   if (scrollX_EN > width + enW + 40) {
     scrollX_EN = 0;
