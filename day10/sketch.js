@@ -1,4 +1,4 @@
-    let mx = 1;
+let mx = 1;
 let my = 1;
 
 let video;
@@ -7,68 +7,95 @@ let vol = 0;
 let volSmooth = 0;
 let audioStarted = false;
 
-
 function setup() {
   createCanvas(windowWidth, windowHeight);
   angleMode(DEGREES);
-  pixelDensity(1)
+  pixelDensity(1);
 
   stroke(255);
-  strokeWeight(width*0.03);
+  strokeWeight(width * 0.03);
   noFill();
 
-  // ---- CAMERA SETUP ----
+  // ---- CAMERA SETUP (environment) ----
   let constraints = {
     video: {
-      facingMode: "environment", // change to "environment" for rear camera
-      width: { ideal: 320 },
+      facingMode: "environment",
+      width: { ideal: 1280 },
       height: { ideal: 720 }
     },
     audio: false
   };
 
   video = createCapture(constraints);
-  video.size(width, height);
-  video.hide(); // important: we draw it manually
+  video.hide();
 
-  // ---- MICROPHONE SETUP ----
+  // ---- MICROPHONE ----
   mic = new p5.AudioIn();
-  mic.start();
 }
 
 function draw() {
-  // draw webcam as background
-  image(video, 0, 0, width, height);
+  drawVideoFill();
+
+  // temporal fade (motion memory)
+  fill(0, 18);
+  noStroke();
+  rect(0, 0, width, height);
 
   // get mic volume
   vol = mic.getLevel();
-
-  // smooth it so it’s less jittery
   volSmooth = lerp(volSmooth, vol, 0.1);
 
-  // ---- MAPPING MIC TO VALUES ----
-  // mx responds directly to volume
+  // audio mappings
   mx = map(volSmooth, 0, 0.2, 1, 10, true);
-
-  // OPTION A: inverse mapping (simple & stable)
-  // my = map(volSmooth, 0, 0.2, 10, 1, true);
-
-  // OPTION B: delayed / derived value (more dynamic)
   my = map(abs(volSmooth - vol), 0, 0.05, 1, 10, true);
 
- 
+  // optical blending for figures
+  blendMode(SCREEN);
+
   push();
-  fig2(width*0.49, width / 2, height / 2);
+  fig2(width * 0.49, width / 2, height / 2);
   pop();
 
-   push();
-  fig(width*0.49, width / 2, height / 2);
+  push();
+  fig(width * 0.49, width / 2, height / 2);
   pop();
 
+  blendMode(BLEND);
+
+  // contrast lock (stabilizes phone exposure)
+  fill(0, 30);
+  rect(0, 0, width, height);
 }
 
+// ---- VIDEO DRAW (cropped to fill canvas) ----
+function drawVideoFill() {
+  let videoAspect = video.width / video.height;
+  let canvasAspect = width / height;
+
+  let drawW, drawH;
+
+  if (videoAspect > canvasAspect) {
+    drawH = height;
+    drawW = height * videoAspect;
+  } else {
+    drawW = width;
+    drawH = width / videoAspect;
+  }
+
+  tint(220); // slight desaturation
+  image(
+    video,
+    (width - drawW) / 2,
+    (height - drawH) / 2,
+    drawW,
+    drawH
+  );
+  noTint();
+}
+
+// ---- FIGURES ----
 function fig(r, px, py) {
-  stroke(220, 255, 0);
+  stroke(220, 255, 0, 180);
   translate(px, py);
   beginShape();
   for (let theta = 0; theta < 361; theta++) {
@@ -80,7 +107,7 @@ function fig(r, px, py) {
 }
 
 function fig2(r, px, py) {
-  stroke(255, 0, 153);
+  stroke(255, 0, 153, 160);
   translate(px, py);
   beginShape();
   for (let theta = 0; theta < 361; theta++) {
@@ -93,18 +120,18 @@ function fig2(r, px, py) {
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  video.size(width, height);
 }
 
-
+// ---- AUDIO UNLOCK ----
 function mousePressed() {
   if (!audioStarted) {
-    userStartAudio();   // unlocks AudioContext
-    mic.start();        // starts microphone
+    userStartAudio();
+    mic.start();
     audioStarted = true;
     console.log("Audio unlocked");
   }
 }
+
 function touchStarted() {
   mousePressed();
   return false;
