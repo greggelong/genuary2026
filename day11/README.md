@@ -57,3 +57,31 @@ Within this loop, obeying orders becomes equivalent to giving orders. The system
 This project explores recursion and self-reference outside of software.
 Instead of code printing itself, physical actions reproduce themselves.
 The machine listens to its own output and treats it as instruction.
+
+```
+                    +5–6V (External Supply)
+                           |
+                           |   Red
+                        +--+----------------+
+                        |  Servo (SG90)     |
+                        |                  |
+Arduino D9  -----------+-- Orange           |
+Arduino GND -----------+-- Brown ------------+---- GND (Common)
+                                             |
+                                             |
+Arduino GND ---------------------------------+
+
+                 Piezo Disk (Sensor)
+              +-----------------------+
+              |                       |
+Arduino A0 ---+                       |
+              |                       |
+              +---- 1MΩ Resistor -----+
+              |                       |
+Arduino GND --+-----------------------+
+
+                 LED (Optional)
+Arduino D13 ---->|---- GND
+
+
+```
