@@ -1,5 +1,7 @@
 # Physical Quine (Arduino + Servo + Piezo)
 
+## obeying orders becomes equivalent to giving orders
+
 ## Overview
 
 This project is a small physical system that behaves like a **quine**.
