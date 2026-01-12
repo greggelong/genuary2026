@@ -1,0 +1,36 @@
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevents scrolling */
+  background-color: white;
+}
+
+#mirror {
+  width: 100vw;
+  height: 100vh;
+  display: block;
+}
+
+/* Make the slider wider and taller */
+input[type=range] {
+  -webkit-appearance: none;
+  width: 80%; /* Takes up most of the screen width */
+  height: 40px; /* Thicker track */
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 20px;
+  outline: none;
+  border: 2px solid #333;
+}
+
+/* Make the handle (thumb) big enough for a thumb */
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 50px; 
+  height: 50px;
+  background: #ff0000;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+}
