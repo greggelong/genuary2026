@@ -1,3 +1,7 @@
+// code 
+// adapted from https://thecodingtrain.com/tracks/pixels/pixels/checkbox-mirror
+
+
 var video;
 var vScale = 24; // The size of each input box
 var slider;
