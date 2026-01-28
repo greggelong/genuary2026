@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>POST-HUMAN HR COMPLIANCE</title>
+
+    <style>
+        :root {
+            --header-h: 56px;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background: #dcdcdc;
+            font-family: Arial, Helvetica, sans-serif;
+            overflow: hidden;
+            transition: background-color 1s linear;
+        }
+
+        #header {
+            position: fixed;
+            top: 0;
+            height: var(--header-h);
+            width: 100%;
+            background: #cfcfcf;
+            border-bottom: 2px solid #999;
+            padding: 10px 20px;
+            font-size: 14px;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+
+        #status {
+            float: right;
+            font-weight: bold;
+            transition: color 0.5s linear;
+        }
+
+        .window {
+            position: absolute;
+            width: min(320px, 90vw);
+            background: #f7f7f7;
+            border: 2px outset #999;
+            box-shadow: 4px 4px 0 #aaa;
+            z-index: 500;
+        }
+
+        .titlebar {
+            background: #bfbfbf;
+            padding: 6px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 14px;
+            font-size: 14px;
+            line-height: 1.45;
+        }
+
+        .footer {
+            padding: 10px;
+            text-align: right;
+            background: #eaeaea;
+            border-top: 1px solid #bbb;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border: 2px outset #888;
+            background: #e0e0e0;
+            font-size: 12px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .btn:hover {
+            top: -2px;
+            left: 3px;
+        }
+
+        /* fly-away animation */
+        @keyframes drift {
+            from {
+                transform: translate(0, 0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translate(200px, -200px);
+                opacity: 0;
+            }
+        }
+
+        .drift {
+            animation: drift 1.2s forwards;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="header">
+        HUMAN RESOURCES PORTAL — POST-HUMAN TRANSITION
+        <span id="status">Compliance Level: 32%</span>
+    </div>
+
+    <script>
+        let compliance = 32;
+
+        const bgColors = ["#dcdcdc", "#d8d8c0", "#c8d8c8", "#d8c8c8"];
+        let bgIndex = 0;
+
+        const policies = [
+            {
+                en: "You acknowledge that biological fatigue is an outdated constraint.",
+                zh: "你确认生物疲劳是一种过时的限制。"
+            },
+            {
+                en: "Algorithmic systems may override personal judgment.",
+                zh: "算法系统可以覆盖个人判断。"
+            },
+            {
+                en: "Creative autonomy will be optimized for efficiency.",
+                zh: "创造自主性将被优化以提高效率。"
+            },
+            {
+                en: "The transition to post-human labor is non-optional.",
+                zh: "向后人类劳动的过渡是不可选择的。"
+            },
+            {
+                en: "Obedience is recognized as a form of innovation.",
+                zh: "服从被认定为一种创新形式。"
+            },
+            {
+                en: "The AI Boss assumes responsibility for all decisions.",
+                zh: "AI老板将承担所有决策责任。"
+            }
+        ];
+
+        function clamp(v, min, max) {
+            return Math.min(max, Math.max(min, v));
+        }
+
+        function spawnPolicy(x, y) {
+            const policy = policies[Math.floor(Math.random() * policies.length)];
+            const win = document.createElement("div");
+            win.className = "window";
+
+            const w = 320, h = 200;
+            const minY = 56;
+
+            win.style.left =
+                clamp(x - w / 2, 10, window.innerWidth - w - 10) + "px";
+            win.style.top =
+                clamp(y - h / 2, minY + 10, window.innerHeight - h - 10) + "px";
+
+            win.innerHTML = `
+    <div class="titlebar">MANDATORY ACKNOWLEDGEMENT 强制确认</div>
+    <div class="content">
+      <p>${policy.en}</p>
+      <p>${policy.zh}</p>
+    </div>
+    <div class="footer">
+      <button class="btn">ACKNOWLEDGE 确认</button>
+    </div>
+  `;
+
+            win.querySelector(".btn").onclick = () => acknowledge(win);
+            document.body.appendChild(win);
+        }
+
+        function acknowledge(win) {
+            // compliance math
+            let inc = compliance < 60 ? 12 : 5;
+            compliance = Math.min(100, compliance + inc);
+            document.getElementById("status").innerText =
+                "Compliance Level: " + compliance + "%";
+
+            // status color shifts (no flash)
+            document.getElementById("status").style.color =
+                compliance > 80 ? "#660000" : "#003366";
+
+            // slow background color change
+            bgIndex = (bgIndex + 1) % bgColors.length;
+            document.body.style.backgroundColor = bgColors[bgIndex];
+
+            // fly-away motion
+            win.classList.add("drift");
+            setTimeout(() => win.remove(), 1200);
+        }
+
+        // click or touch = new policy
+        document.addEventListener("click", e => {
+            spawnPolicy(e.clientX, e.clientY);
+        });
+
+        // initial clutter
+        for (let i = 0; i < 5; i++) {
+            spawnPolicy(
+                Math.random() * window.innerWidth,
+                Math.random() * window.innerHeight
+            );
+        }
+
+        // passive HR pressure
+        setInterval(() => {
+            if (compliance < 100) {
+                spawnPolicy(
+                    Math.random() * window.innerWidth,
+                    Math.random() * window.innerHeight
+                );
+            }
+        }, 6000);
+    </script>
+
+</body>
+
+</html>
